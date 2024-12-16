@@ -16,22 +16,22 @@ exports.Patner = async (req, res) => {
 
         const chunked_q_data = Chunker(q_data)
 
-        // chunked_q_data.map(async (q_data, i) => {
-        //     setTimeout(async () => {
-        //         const so_q_data = {
-        //             "domain": "AdorTest",
-        //             "user_type": "1",
-        //             "partner": [...q_data],
-        //         }
-        //         await producer.send({
-        //             topic: 'partner',
-        //             messages: [
-        //                 { value: JSON.stringify(so_q_data) },
-        //             ],
-        //         })
-        //         console.log(`sent partner data at ${moment().format("DD-MM-YYYY hh:mm:ss a")}`);
-        //     }, 1000 * (i + 1))
-        // })
+        chunked_q_data.map(async (q_data, i) => {
+            setTimeout(async () => {
+                const so_q_data = {
+                    "domain": "AdorTest",
+                    "user_type": "1",
+                    "partner": [...q_data],
+                }
+                await producer.send({
+                    topic: 'partner',
+                    messages: [
+                        { value: JSON.stringify(so_q_data) },
+                    ],
+                })
+                console.log(`sent partner data at ${moment().format("DD-MM-YYYY hh:mm:ss a")}`);
+            }, 1000 * (i + 1))
+        })
         res && res.json(chunked_q_data)
 
     } catch (error) {

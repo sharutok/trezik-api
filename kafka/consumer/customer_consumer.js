@@ -13,18 +13,40 @@ const consumer = kafka.consumer({ groupId: 'test-group' })
 const run = async () => {
     // Consuming
     await consumer.connect()
-    await consumer.subscribe({ topics: ['customer'] } )
-
+    await consumer.subscribe({ topics: ['customer', 'material', 'salesorder','purchaseorder'] } )
     await consumer.run({
-        eachMessage: async ({ topic, partition, message }) => {
-            await SendDataBody(endpoints.customer, message.value.toString())
+        eachBatch: async ({ batch, heartbeat }) => {
+            for (const message of batch.messages) {
+                try {
+                    const handler = topicHandlers[batch.topic];
+                    if (handler) {
+                        await handler(message);
+                    } else {
+                        console.warn(`No handler for topic: ${topic}`);
+                    }
+                } catch (error) {
+                    console.error(`Error handling message: ${message.value.toString()}`, error);
+                }
+            }
+            await heartbeat()
         },
+        batch: {
+            size: 10,
+            timeout: 30000
+        }
     })
 }
 
+const topicHandlers = {
+    'customer': async (message) => await SendDataBody(endpoints.customer, message.value.toString()),
+    'material': async (message) => await SendDataBody(endpoints.material, message.value.toString()),
+    'salesorder': async (message) => await SendDataBody(endpoints.SalesOrder, message.value.toString()),
+    'purchaseorder': async (message) => await SendDataBody(endpoints.purchaseOrder, message.value.toString()),
+    // 'inventory': async (message) => await SendDataBody(endpoints.Inventory, message),
+};
+
+
 run().catch(console.error)
-
-
 
 const SendDataBody = async (api, data) => {
     try {

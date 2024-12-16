@@ -13,8 +13,6 @@ exports.MaterialImport = async (req, res) => {
         const chunked_q_data = Chunker(q_data?.response)
 
         chunked_q_data.map(async (q_data, i) => {
-            console.log(q_data[i]);
-            
             setTimeout(async () => {
                 const so_q_data = {
                     "domain": "AdorTest",

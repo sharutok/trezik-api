@@ -15,7 +15,7 @@ exports.q_customer = async() => {
          EMAIL_ADDRESS "email",
          TO_CHAR(FIRST_NAME || '' ||LAST_NAME) "contact_person"
         FROM AWL_COPS.COPS_CUSTOMER_ACCOUNTS
-        WHERE currency_code = 'USD' and rownum<=10 ORDER BY CREATION_DATE desc`
+        WHERE currency_code = 'USD' and rownum<=1 ORDER BY CREATION_DATE desc`
     const data =await execute_query(q)
     return data
 }

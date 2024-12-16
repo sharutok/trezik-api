@@ -29,14 +29,14 @@ exports.q_material = async () => {
 exports.q_material_export = async () => {
     const q = `
             SELECT
-            --    aim.INVENTORY_ITEM_ID,
+            --aim.INVENTORY_ITEM_ID,
             aim.concatenated_segments  "material_code",
             aim.DESCRIPTION "material_description",
-  --          aim.INVENTORY_ITEM_STATUS_CODE,
-    --        aim.DESCRIPTION,
-           -- CASE aim.INVENTORY_ITEM_STATUS_CODE
-           -- WHEN 'Active' THEN 'Y'
-           -- WHEN 'Inactive' THEN 'N'
+            --aim.INVENTORY_ITEM_STATUS_CODE,
+            --aim.DESCRIPTION,
+           --CASE aim.INVENTORY_ITEM_STATUS_CODE
+           --WHEN 'Active' THEN 'Y'
+           --WHEN 'Inactive' THEN 'N'
             --END ENABLED_FLAG,
             (select max(b.reporting_code) from
             apps.jai_item_templ_hdr_v a,
@@ -63,7 +63,7 @@ exports.q_material_export = async () => {
             where
             aim.INVENTORY_ITEM_STATUS_CODE='Active'
             and aim.INVENTORY_ITEM_ID in (select cpl.INVENTORY_ITEM_ID from AWL_COPS.COPS_PRICE_LIST_DETAILS cpl where CURRENCY_CODE='USD')
-   and rownum <=10
+   and rownum <=1
                 `
     const data = await execute_query(q)
     return data

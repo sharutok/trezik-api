@@ -11,13 +11,13 @@ exports.SalesOrder = async (req, res) => {
         let q_data = await q_sales_order()
 
         q_data = q_data?.response.map(x => {
+            // x["company"]="2022",
             x["company"]="Ador Welding Limited",
             x["business_partners"] = []
             x["material"] = []
             return x
         })
-
-
+        
         const chunked_q_data = Chunker(q_data)
 
         chunked_q_data.map(async (q_data, i) => {

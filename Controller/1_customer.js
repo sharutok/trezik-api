@@ -29,16 +29,16 @@ exports.Customer = async(req, res) => {
             }
             await producer.send({
                 topic: 'customer',
-                messages: [
-                    { value: JSON.stringify(so_q_data) },
-                ],
+                messages: [{
+                    value: JSON.stringify(so_q_data)
+                }],
             })
-                console.log(`sent vendor data at ${moment().format("DD-MM-YYYY hh:mm:ss a")}`);
+                console.log(`sent customer data at ${moment().format("DD-MM-YYYY hh:mm:ss a")}`);
             }, 1000 * (i + 1))
         })
 
         // send response to the client
-        res &&res.json({"mess":"ok"})
+        res && res.json(chunked_q_data)
     } catch (error) {
         console.log("error in customer",error)
     }
