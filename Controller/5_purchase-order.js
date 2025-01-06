@@ -13,7 +13,7 @@ exports.PurchaseOrder = async (req, res) => {
                 const so_q_data = {
                     "domain": "AdorTest",
                     "user_type": "1",
-                    "purchaseOrder": [q_data],
+                    "purchaseOrder": q_data,
             }
             
             final_data.push(so_q_data)
