@@ -9,24 +9,15 @@ const { q_sales_order } = require("../queries/q_sales_order")
 exports.SalesOrder = async (req, res) => {
     try {
         let q_data = await q_sales_order()
+        let final_data=[]
 
-        q_data = q_data?.response.map(x => {
-            // x["company"]="2022",
-            x["company"]="Ador Welding Limited",
-            x["business_partners"] = []
-            x["material"] = []
-            return x
-        })
-        
-        const chunked_q_data = Chunker(q_data)
-
-        chunked_q_data.map(async (q_data, i) => {
-            setTimeout(async () => {
+        q_data?.map(async (q_data, i) => {
                 const so_q_data = {
                     "domain": "AdorTest",
                     "user_type": "2",
-                    "salesOrder": [...q_data],
+                    "salesOrder": [q_data],
                 }
+            final_data.push(so_q_data)
                 await producer.send({
                     topic: 'salesorder',
                     messages: [
@@ -34,9 +25,8 @@ exports.SalesOrder = async (req, res) => {
                     ],
                 })
                 console.log(`sent sales-order data at ${moment().format("DD-MM-YYYY hh:mm:ss a")}`);
-            }, 1000 * (i + 1))
-        })
-        res && res.json(chunked_q_data)
+            })
+        res && res.json(final_data)
 
     } catch (error) {
         console.log("error in vendor", error)

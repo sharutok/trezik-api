@@ -7,26 +7,22 @@ const producer = require("../kafka/producer/producer")
 
 exports.Customer = async(req, res) => {
     try {
-        // get sql data 
         let q_data = await q_customer()
-
-        // preparing data
+        let final_data = []
+        
         q_data=q_data?.response.map(x => {
             x["customer_group"]=[]
             return  x 
         })
 
-        // chunk data
-        const chunked_q_data = Chunker(q_data)
-        
-        //send chunk of data to kafka
-        chunked_q_data.map(async(q_data,i) => { 
-            setTimeout(async() => {
+        q_data.map(async(q_data,i) => { 
                 const so_q_data = {
                     "domain": "AdorTest",
                     "user_type": "2",
-                    "customer": [...q_data],
+                    "customer": [q_data],
             }
+            
+            final_data.push(so_q_data)
             await producer.send({
                 topic: 'customer',
                 messages: [{
@@ -34,11 +30,11 @@ exports.Customer = async(req, res) => {
                 }],
             })
                 console.log(`sent customer data at ${moment().format("DD-MM-YYYY hh:mm:ss a")}`);
-            }, 1000 * (i + 1))
         })
 
+
         // send response to the client
-        res && res.json(chunked_q_data)
+        res && res.json(final_data)
     } catch (error) {
         console.log("error in customer",error)
     }

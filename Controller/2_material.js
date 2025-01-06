@@ -10,25 +10,26 @@ exports.MaterialImport = async (req, res) => {
     try {
         let q_data = await q_material()
 
-        const chunked_q_data = Chunker(q_data?.response)
-
-        chunked_q_data.map(async (q_data, i) => {
-            setTimeout(async () => {
+        // const chunked_q_data = Chunker(q_data?.response)
+        let final_data=[]
+        q_data?.response.map(async (q_data_, i) => {
                 const so_q_data = {
                     "domain": "AdorTest",
                     "user_type": "2",
-                    "material": [...q_data],
-                }
+                    "material": [q_data_],
+            }
+            
+            final_data.push(so_q_data)
                 await producer.send({
                     topic: 'material',
                     messages: [
                         { value: JSON.stringify(so_q_data) },
                     ],
                 })
-                console.log(`sent material data at ${moment().format("DD-MM-YYYY hh:mm:ss a")}`);
-            }, 1000 * (i + 1))
+
+                console.log(`sent material-import data at ${moment().format("DD-MM-YYYY hh:mm:ss a")}`);
         })
-        res.json(chunked_q_data)
+        res.json(final_data)
         
     } catch (error) {
         console.log("error in material", error)
@@ -38,53 +39,57 @@ exports.MaterialImport = async (req, res) => {
 exports.MaterialExport = async (req, res) => {
     try {
         let q_data = await q_material_export()
+        
 
-        const chunked_q_data = Chunker(q_data?.response)
+        // const chunked_q_data = Chunker(q_data?.response)
 
-        chunked_q_data.map(async (q_data, i) => {
-            setTimeout(async () => {
-                const so_q_data = {
+        let final_data=[]
+        q_data?.response?.map(async (q_data_, i) => {
+            const so_q_data = {
                     "domain": "AdorTest",
                     "user_type": "2",
-                    "material": [...q_data],
+                "material": [{ ...q_data_,...{
                     "material_attribute_class": "Material",
                     "material_attributes": [
                         {
                             "label": "AWS Code",
-                            "value": q_data[i]?.["AWS Code"]
+                            "value": q_data_?.["AWS Code"]
                         },
                         {
                             "label": "Size",
-                            "value": q_data[i]?.["LENGTH"]
+                            "value": q_data_?.["LENGTH"]
                         },
                         {
                             "label": "Diameter",
-                            "value": q_data[i]?.["DIAMETER"]
+                            "value": q_data_?.["DIAMETER"]
                         },
                         {
                             "label": "Brand Name",
-                            "value": q_data[i]?.["BRAND_NAME"]
+                            "value": q_data_?.["BRAND_NAME"]
                         },
                         {
                             "label": "Method of Packing",
-                            "value": q_data[i]?.["METHOD_OF_PACKING"]
+                            "value": q_data_?.["METHOD_OF_PACKING"]
                         },
                         {
                             "label": "Standard Pack Size",
-                            "value": q_data[i]?.["STANDARD_PACK_SIZE"]
+                            "value": q_data_?.["STANDARD_PACK_SIZE"]
                         }
                     ],
+                } },
+                        ],
+                   
                 }
+                final_data.push(so_q_data)
                 await producer.send({
                     topic: 'material',
                     messages: [
                         { value: JSON.stringify(so_q_data) },
                     ],
                 })
-                console.log(`sent material data at ${moment().format("DD-MM-YYYY hh:mm:ss a")}`);
-            }, 1000 * (i + 1))
+                console.log(`sent material-export data at ${moment().format("DD-MM-YYYY hh:mm:ss a")}`);
         })
-        res.json(chunked_q_data)
+        res.json( final_data )
         
     } catch (error) {
         console.log("error in material", error)

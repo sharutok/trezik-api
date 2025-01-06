@@ -4,7 +4,9 @@ const endpoints = {
     material: `${url}/storeMaterial`,
     vendor: `${url}/storeVendor`,
     purchaseOrder: `${url}/storePurchaseOrder`,
-    SalesOrder: `${url}/storeSalesOrder`
+    SalesOrder: `${url}/storeSalesOrder`,
+    partner: `${url}/storePartner`,
+    businesspartner: `${url}/storeBusinessPartner`
 }
 
 module.exports=endpoints

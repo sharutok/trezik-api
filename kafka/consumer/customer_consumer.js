@@ -13,7 +13,7 @@ const consumer = kafka.consumer({ groupId: 'test-group' })
 const run = async () => {
     // Consuming
     await consumer.connect()
-    await consumer.subscribe({ topics: ['customer', 'material', 'salesorder','purchaseorder'] } )
+    await consumer.subscribe({ topics: ['customer', 'material', 'salesorder', 'purchaseorder', 'vendor', 'partner','businesspartner'] } )
     await consumer.run({
         eachBatch: async ({ batch, heartbeat }) => {
             for (const message of batch.messages) {
@@ -42,7 +42,9 @@ const topicHandlers = {
     'material': async (message) => await SendDataBody(endpoints.material, message.value.toString()),
     'salesorder': async (message) => await SendDataBody(endpoints.SalesOrder, message.value.toString()),
     'purchaseorder': async (message) => await SendDataBody(endpoints.purchaseOrder, message.value.toString()),
-    // 'inventory': async (message) => await SendDataBody(endpoints.Inventory, message),
+    'vendor': async (message) => await SendDataBody(endpoints.vendor, message.value.toString()),
+    'partner': async (message) => await SendDataBody(endpoints.partner, message.value.toString()),
+    'businesspartner': async (message) => await SendDataBody(endpoints.businesspartner, message.value.toString())
 };
 
 
@@ -63,3 +65,5 @@ const SendDataBody = async (api, data) => {
         console.log("new error");
     }
 }
+
+
