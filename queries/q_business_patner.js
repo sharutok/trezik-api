@@ -125,7 +125,6 @@ exports.q_vendor_business_partner = async (x) => {
         AND assa.ship_to_location_id = hl_ship_to.location_id
         AND assa.bill_to_location_id = hl_bill_to.location_id
         AND ROWNUM <= 2
-        and 
     `
     const data = await execute_query(q)
     return data

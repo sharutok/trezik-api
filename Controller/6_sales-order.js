@@ -2,7 +2,6 @@ const { default: axios } = require("axios")
 const moment = require('moment')
 const producer = require("../kafka/producer/producer")
 const { Chunker } = require("../utils/chunker")
-const { q_purchase_order } = require("../queries/q_purchase_order")
 const { q_sales_order } = require("../queries/q_sales_order")
 
 

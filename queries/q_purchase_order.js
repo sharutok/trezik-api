@@ -27,23 +27,23 @@ exports.q_purchase_order = async () => {
 const po_unique_header_id= () => {
     return` 
            SELECT
-           ff.vendor_id,
+           assa.vendor_site_id "VENDOR_ID",
             aa.po_header_id HEADER_ID
---      'Ador Welding Limited' "company"
---        ,'2022' "company_code"
---        ,ee.name "plant"
---        ,hl_ship_to.location_code "ship_to_address"
---        ,aa.SEGMENT1 "po_no"
---        ,ff.vendor_name "vendor"
---        --assa.ADDRESS_LINE1 || assa.ADDRESS_LINE2 || assa.ADDRESS_LINE3 || assa.city || assa.state || assa.country vendor_address,
---        ,NULL "delivery_port"
---        ,aa.CURRENCY_CODE "currency"
---        ,aa.rate "currency_exchange_rate"
---        ,dd.name "payment_term"
---        ,flv.meaning "inco_term"
---        ,NULL "mode_of_shipment"
---        ,TO_CHAR (TRUNC (aa.CREATION_DATE),'DD-MON-YYYY') "po_date"
---        ,aa.COMMENTS "remarks"
+        --'Ador Welding Limited' "company"
+        --  ,'2022' "company_code"
+        --  ,ee.ORGANIZATION_ID "plant"
+        --  ,hl_ship_to.location_code "ship_to_address"
+        --  ,aa.SEGMENT1 "po_no"
+        --  ,ff.vendor_name "vendor"
+        --  --assa.ADDRESS_LINE1 || assa.ADDRESS_LINE2 || assa.ADDRESS_LINE3 || assa.city || assa.state || assa.country vendor_address,
+        --  ,NULL "delivery_port"
+        --  ,aa.CURRENCY_CODE "currency"
+        --  ,aa.rate "currency_exchange_rate"
+        --  ,dd.name "payment_term"
+        --  ,flv.meaning "inco_term"
+        --  ,NULL "mode_of_shipment"
+        --  ,TO_CHAR (TRUNC (aa.CREATION_DATE),'DD-MON-YYYY') "po_date"
+        --  ,aa.COMMENTS "remarks"
         --aa.po_header_id
         --       aa.CREATION_DATE,
         --       aa.LAST_UPDATE_DATE
@@ -69,8 +69,8 @@ const po_unique_header_id= () => {
         AND assa.ship_to_location_id = hl_ship_to.location_id
        and hl_ship_to.ship_to_location_id = aa.SHIP_TO_LOCATION_ID
        and aa.cancel_flag <> 'Y'
---       and aa.SEGMENT1 = 412100917
-      AND rownum <= 2
+        --and aa.SEGMENT1 = 112502792
+      AND rownum <= 3
         `
 }
 
@@ -79,10 +79,10 @@ const po_header = (x) => {
         SELECT
        ' Ador Welding Limited'                           "company",
        '2022'                                            "company_code",
-       ee.organization_id                                "plant",
+       hl_ship_to.INVENTORY_ORGANIZATION_ID              "plant",
        hl_ship_to.location_code                          "ship_to_address",
        aa.segment1                                       "po_no",
-       ff.vendor_id,
+       --ff.vendor_id,
        ff.vendor_name                                    "vendor"
        --assa.ADDRESS_LINE1 || assa.ADDRESS_LINE2 || assa.ADDRESS_LINE3 || assa.city || assa.state || assa.country vendor_address,
        ,
@@ -118,7 +118,7 @@ const po_header = (x) => {
        AND assa.vendor_id = ff.vendor_id
        AND assa.ship_to_location_id = hl_ship_to.location_id
        AND hl_ship_to.ship_to_location_id = aa.ship_to_location_id
-       --       and aa.SEGMENT1 = 412100917
+       -- and aa.SEGMENT1 = 412100917
        and aa.cancel_flag <> 'Y'
        and aa.po_header_id ='${x.HEADER_ID}'
        AND rownum <= 2
@@ -263,6 +263,6 @@ const business_partners = (x) => {
         AND assa.terms_id = apt.term_id
         AND assa.ship_to_location_id = hl_ship_to.location_id
         AND assa.bill_to_location_id = hl_bill_to.location_id
-        AND aps.VENDOR_ID = ${x.VENDOR_ID}
+        AND assa.vendor_site_id = ${x.VENDOR_ID}
     `
 }
