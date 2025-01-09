@@ -2,32 +2,21 @@ const { execute_query } = require("../utils/oracle-connect")
 
 exports.q_sales_order = async () => {
 	let final_data = []
-	const bill_to_and_ship_to = []
-	
 	const data = await execute_query(q())
 	
 	const unique = data?.response?.map(x => {
-		
-		bill_to_and_ship_to.push( x.SHIP_TO, x.BILL_TO)
-		
 		return ({
 			HEADER_ID: x.HEADER_ID,
 			PARTY_NAME: x.PARTY_NAME,
-	
+			ADDRESS: `${x.SHIP_TO}:${x.BILL_TO}`
 		})
 	})
 	
-	const data3 = await Promise.all(bill_to_and_ship_to.map(async (x) => {	
-		const a = await execute_query(q3(x))
-		return a?.response[0]
-	}))
-	
-
 	await Promise.all(unique.map(async (x) => {
 		const data1 = await execute_query(q1(x))
-		const data2 = await execute_query(q2(x))
-
-
+		const data2 = await execute_query(q2(x))	
+		const data3 = await q3(x)
+		
 		data1?.response?.map(x => {
 			x["material"] = data2?.response?.length ? data2?.response : []	
 			x["business_partner"] = data3?.length ? data3 : []
@@ -35,7 +24,7 @@ exports.q_sales_order = async () => {
 		})
 		final_data.push(...data1?.response)
 	}))
-	return final_data
+	return final_data||[]
 }
 
 // unique id
@@ -63,9 +52,11 @@ const q = () => {
 	AND gdr.from_currency <> 'INR'
 	AND gdr.conversion_type = '1000'
 	AND ooh.cust_po_number IS NOT null
-	--and order_number='10250213'
 	and ooh.CANCELLED_FLAG <> 'Y'
-	AND rownum <= 10`
+	AND rownum <= 5
+	AND order_number='10250028'
+	order by ooh.creation_date desc
+	`
 }
 
 // header
@@ -78,6 +69,7 @@ const q1 = (x) => {
 --      hou.name "plant",
         ooh.SHIP_FROM_ORG_ID "plant",
         order_number "order_no",
+        ooh.SHIP_FROM_ORG_ID||'-'||order_number "order_no",
         hp.party_name "buyer",
         ooh.cust_po_number "po_no",
         ooh.attribute6 "po_date",
@@ -177,56 +169,72 @@ const q2 = (x) => {
 		` }
 
 // business patner
-const q3 = (x) => {
+const q3 = (async (x) => {
+	const address = x.ADDRESS.split(":")
+	const resp = await Promise.all(address.map(async (x) => {
+		const asp=await execute_query(q4(x))
+		return asp
+	}))
+	const asp = resp.flat()
+	let final_sites=[]
+	asp.map(x => {
+		final_sites.push(...x?.response)
+	})
+	return final_sites
+	
+}) 
+
+
+
+// business patner by ship to & bill to
+const q4 = (x) => {
 	return `
-			SELECT
-    '' "vendor_code",
-    --ccs.SITE_USE_ID "customer_code",
-    cca.ACCOUNT_NUMBER "customer_code",
-    ccs.SITE_USE_ID "partner_code",
-    cca.PARTY_NAME "partner_name",
-    --cca.EMAIL_ADDRESS "partner_email_id",
-    --cca.PARTY_NAME "partner",
-    --ccs.CUST_ACCOUNT_ID ,
-    --ccs.LOCATION_ID,
-    --ccs.LOCATION,
-    --ccs.SITE_USE_ID,
-    --ccs.SITE_USE_CODE "patner",
-     CASE ccs.SITE_USE_CODE
-           WHEN 'BILL_TO' THEN 'Bill-to party'
-           WHEN 'SHIP_TO' THEN 'Ship-to party'
-            END "partner_type"
-    -- ccs.STATUS,
-    -- ccs.ADDRESS1 "partner_address_1",
-    -- ccs.ADDRESS2 "partner_address_2",
-    -- ccs.ADDRESS3 "partner_address_3",
-    -- ccs.ADDRESS4 "partner_address_4",
-    --ccs.CITY "city",
-    --ccs.STATE,
-    --ccs.POSTAL_CODE,
-    --ccs.COUNTRY "country"
-    --ccs.ATTRIBUTE1 TYPE,
-    --ccs.ATTRIBUTE2 GST,
-    --ccs.OPERATING_UNIT_ID,
-    --cod.ORGANIZATION_ID,
-    --cca.currency_code
-		FROM
-		apps.cops_customer_accounts cca,
-		apps.cops_customer_sites ccs,
-		apps.HZ_CUST_SITE_USES_ALL hcsua,
-		apps.jai_party_regs jpr,
-		apps.cops_organization_definitions cod
-		WHERE
-		1 = 1
-		AND cca.cust_Account_id = ccs.cust_Account_id
-		AND ccs.SITE_USE_ID = hcsua.SITE_USE_ID
-		AND hcsua.cust_acct_site_id = jpr.party_site_id
-		AND cod.operating_unit_id = jpr.org_id
-		AND jpr.item_category_list LIKE '%' || cod.ORGANIZATION_CODE || '%'
-		AND cca.currency_code <> 'INR'
-		AND ccs.STATUS='A'
-		AND ccs.SITE_USE_ID = '${x}'
-		` }
-
-
-
+		SELECT
+		'' "vendor_code",
+		--ccs.SITE_USE_ID "customer_code",
+		cca.ACCOUNT_NUMBER "customer_code",
+		ccs.SITE_USE_ID "partner_code",
+		cca.PARTY_NAME "partner_name",
+		--cca.EMAIL_ADDRESS "partner_email_id",
+		--cca.PARTY_NAME "partner",
+		--ccs.CUST_ACCOUNT_ID ,
+		--ccs.LOCATION_ID,
+		--ccs.LOCATION,
+		--ccs.SITE_USE_ID,
+		--ccs.SITE_USE_CODE "patner",
+		 CASE ccs.SITE_USE_CODE
+			   WHEN 'BILL_TO' THEN 'Bill-to party'
+			   WHEN 'SHIP_TO' THEN 'Ship-to party'
+				END "partner_type"
+		-- ccs.STATUS,
+		-- ccs.ADDRESS1 "partner_address_1",
+		-- ccs.ADDRESS2 "partner_address_2",
+		-- ccs.ADDRESS3 "partner_address_3",
+		-- ccs.ADDRESS4 "partner_address_4",
+		--ccs.CITY "city",
+		--ccs.STATE,
+		--ccs.POSTAL_CODE,
+		--ccs.COUNTRY "country"
+		--ccs.ATTRIBUTE1 TYPE,
+		--ccs.ATTRIBUTE2 GST,
+		--ccs.OPERATING_UNIT_ID,
+		--cod.ORGANIZATION_ID,
+		--cca.currency_code
+			FROM
+			apps.cops_customer_accounts cca,
+			apps.cops_customer_sites ccs,
+			apps.HZ_CUST_SITE_USES_ALL hcsua,
+			apps.jai_party_regs jpr,
+			apps.cops_organization_definitions cod
+			WHERE
+			1 = 1
+			AND cca.cust_Account_id = ccs.cust_Account_id
+			AND ccs.SITE_USE_ID = hcsua.SITE_USE_ID
+			AND hcsua.cust_acct_site_id = jpr.party_site_id
+			AND cod.operating_unit_id = jpr.org_id
+			AND jpr.item_category_list LIKE '%' || cod.ORGANIZATION_CODE || '%'
+			AND cca.currency_code <> 'INR'
+			AND ccs.STATUS='A'
+			AND ccs.SITE_USE_ID = '${x}'
+			`
+}

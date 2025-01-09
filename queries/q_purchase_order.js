@@ -81,7 +81,8 @@ const po_header = (x) => {
        '2022'                                            "company_code",
        hl_ship_to.INVENTORY_ORGANIZATION_ID              "plant",
        hl_ship_to.location_code                          "ship_to_address",
-       aa.segment1                                       "po_no",
+       --aa.segment1                                       "po_no",
+        hl_ship_to.INVENTORY_ORGANIZATION_ID||'-'||aa.segment1 "po_no",
        --ff.vendor_id,
        ff.vendor_name                                    "vendor"
        --assa.ADDRESS_LINE1 || assa.ADDRESS_LINE2 || assa.ADDRESS_LINE3 || assa.city || assa.state || assa.country vendor_address,
