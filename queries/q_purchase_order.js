@@ -92,7 +92,7 @@ const po_header = (x) => {
        aa.rate
        "currency_exchange_rate",
        dd.NAME                                           "payment_term",
-       flv.meaning                                       "inco_term",
+       flv.lookup_code                                       "inco_term",
        NULL                                              "mode_of_shipment",
        To_char (Trunc (aa.creation_date), 'DD-MON-YYYY') "po_date",
        aa.comments                                       "remarks"
@@ -149,9 +149,8 @@ const po_lines = (x) => {
             --      AND jr.regime_code = 'GST'
             --      AND jith.inventory_item_id = cc.inventory_item_id)
             --           HSN_CODE,
-                ROUND ((bb.unit_price * bb.quantity),
-                2)
-                    "price"
+                --ROUND ((bb.unit_price * bb.quantity),2)
+                    bb.unit_price "price"
             --  TO_CHAR (plla.NEED_BY_DATE,
             --  'DD-MON-YYYY')
             --           request_delivery_date,
